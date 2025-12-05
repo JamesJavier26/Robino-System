@@ -1,21 +1,126 @@
 <x-app-layout>
-    <h1 class="text-2xl font-bold mb-4">Create Booking</h1>
+    <div class="max-w-md mx-auto bg-white shadow rounded p-6 mt-6">
+        <h1 class="text-2xl font-bold mb-6 text-center">Create Booking</h1>
 
-    <form method="POST" action="{{ route('bookings.store') }}">
-        @csrf
+        @if($errors->any())
+            <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                <ul class="list-disc ml-5">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
-        <label>Name:</label>
-        <input type="text" name="name" class="border p-2 w-full mb-4" required>
+        <form method="POST" action="{{ route('bookings.store') }}">
+            @csrf
 
-        <label>Date:</label>
-        <input type="date" name="date" class="border p-2 w-full mb-4" required>
+            <!-- Name -->
+            <div class="mb-4">
+                <label class="block text-gray-700 font-medium mb-2">Name</label>
+                <input type="text" name="name" required
+                       class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+            </div>
 
-        <label>Time:</label>
-        <input type="time" name="time" class="border p-2 w-full mb-4" required>
+            <!-- Date -->
+            <div class="mb-4">
+                <label class="block text-gray-700 font-medium mb-2">Date</label>
+                <input type="date" name="date" required
+                       class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+            </div>
 
-        <label>Color:</label>
-        <input type="color" name="color" class="border p-2 w-full mb-4" value="#3490dc">
+            <!-- Start Time -->
+            <div class="mb-4">
+                <label class="block text-gray-700 font-medium mb-2">Start Time</label>
+                <select name="time" id="time" required
+                        class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    @for($h = 0; $h < 24; $h++)
+                        @php
+                            $timeValue = sprintf('%02d:00', $h);
+                            $timeLabel = \Carbon\Carbon::createFromTime($h,0)->format('g:i A');
+                        @endphp
+                        <option value="{{ $timeValue }}">{{ $timeLabel }}</option>
+                    @endfor
+                </select>
+            </div>
 
-        <button class="bg-green-500 text-white px-4 py-2 rounded">Submit</button>
-    </form>
+            <!-- Duration -->
+            <div class="mb-4">
+                <label class="block text-gray-700 font-medium mb-2">Duration (hours)</label>
+                <input type="number" name="duration" id="duration" min="1" value="1" required
+                       class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+            </div>
+
+            <!-- End Time (auto-calculated) -->
+            <div class="mb-4">
+                <label class="block text-gray-700 font-medium mb-2">End Time</label>
+                <input type="text" id="time_end" name="time_end" readonly
+                    class="w-full border border-gray-300 p-2 rounded bg-gray-100 cursor-not-allowed">
+            </div>
+
+            <!-- Court -->
+            <div class="mb-4">
+                <label class="block text-gray-700 font-medium mb-2">Court</label>
+                <select name="court" required
+                        class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    @for($i = 1; $i <= 6; $i++)
+                        <option value="{{ $i }}">Court {{ $i }}</option>
+                    @endfor
+                </select>
+            </div>
+
+            <!-- Color -->
+            <div class="mb-6">
+                <label class="block text-gray-700 font-medium mb-2">Color</label>
+                <select name="color" required
+                        class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    <option value="#f97316" style="color:#f97316;">Orange</option>
+                    <option value="#3b82f6" style="color:#3b82f6;">Blue</option>
+                    <option value="#9ca3af" style="color:#9ca3af;">Gray</option>
+                </select>
+            </div>
+
+
+            <button type="submit"
+                    class="w-full bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded font-medium">
+                Submit
+            </button>
+        </form>
+    </div>
+
+    <!-- Auto calculate end time -->
+    <script>
+        const timeInput = document.getElementById('time');
+        const durationInput = document.getElementById('duration');
+        const timeEndInput = document.getElementById('time_end');
+
+        function updateEndTime() {
+            const start = timeInput.value; // e.g., "09:00"
+            const duration = parseInt(durationInput.value);
+
+            if (!start || !duration) {
+                timeEndInput.value = '';
+                return;
+            }
+
+            const [hours, minutes] = start.split(':').map(Number);
+            const date = new Date();
+            date.setHours(hours);
+            date.setMinutes(minutes);
+            date.setSeconds(0);
+
+            // Add duration hours
+            date.setHours(date.getHours() + duration);
+
+            // Format as 12-hour e.g., 11:00 AM
+            const options = { hour: 'numeric', minute: '2-digit', hour12: true };
+            timeEndInput.value = date.toLocaleTimeString([], options);
+        }
+
+        timeInput.addEventListener('change', updateEndTime);
+        durationInput.addEventListener('input', updateEndTime);
+
+        // initialize on page load
+        updateEndTime();
+    </script>
 </x-app-layout>

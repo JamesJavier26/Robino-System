@@ -15,25 +15,59 @@
         @endif
 
         @if($bookings->count() > 0)
-            <div class="grid md:grid-cols-3 sm:grid-cols-2 gap-6">
-                @foreach($bookings as $booking)
-                    <div class="bg-white shadow rounded p-4 border-l-8" style="border-left-color: {{ $booking->color }}">
-                        <h2 class="text-xl font-semibold mb-2">{{ $booking->name }}</h2>
-                        <p class="text-gray-600 mb-1"><strong>Date:</strong> {{ $booking->date }}</p>
-                        <p class="text-gray-600 mb-3"><strong>Time:</strong> {{ $booking->time }}</p>
-                        
-                        <div class="flex justify-between items-center">
-                            <a href="{{ route('bookings.edit', $booking) }}" 
-                               class="text-blue-600 hover:underline">Edit</a>
-                            <form action="{{ route('bookings.destroy', $booking) }}" method="POST">
-                                @csrf
-                                @method('DELETE')
-                                <button class="text-red-600 hover:underline" 
-                                        onclick="return confirm('Delete booking?')">Delete</button>
-                            </form>
-                        </div>
-                    </div>
-                @endforeach
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white border border-gray-200 shadow rounded">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="p-3 text-left text-gray-700">Name</th>
+                            <th class="p-3 text-left text-gray-700">Date</th>
+                            <th class="p-3 text-left text-gray-700">Start Time</th>
+                            <th class="p-3 text-left text-gray-700">Duration (hrs)</th>
+                            <th class="p-3 text-left text-gray-700">End Time</th>
+                            <th class="p-3 text-left text-gray-700">Court</th>
+                            <th class="p-3 text-left text-gray-700">Color</th>
+                            <th class="p-3 text-left text-gray-700">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($bookings as $booking)
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="p-3 font-medium" style="background-color: {{ $booking->color }}20;">
+                                    {{ $booking->name }}
+                                </td>
+                                <td class="p-3">{{ $booking->date }}</td>
+
+                                <td class="p-3">
+                                    {{ \Carbon\Carbon::parse($booking->time)->format('g:i A') }}
+                                </td>
+
+                                <td class="p-3">{{ $booking->duration }}</td>
+
+                                <td class="p-3">
+                                    {{ $booking->time_end ? $booking->time_end : '-' }}
+                                </td>
+
+                                <td class="p-3 font-semibold">Court {{ $booking->court }}</td>
+
+                                <td class="p-3">
+                                    <div class="w-8 h-6 rounded" style="background-color: {{ $booking->color }};"></div>
+                                </td>
+
+                                <td class="p-3 flex space-x-2">
+                                    <a href="{{ route('bookings.edit', $booking) }}" 
+                                       class="text-blue-600 hover:underline">Edit</a>
+
+                                    <form action="{{ route('bookings.destroy', $booking) }}" method="POST">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="text-red-600 hover:underline" 
+                                                onclick="return confirm('Delete booking?')">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
         @else
             <p class="text-gray-500 mt-6">No bookings available. Create a new one!</p>
