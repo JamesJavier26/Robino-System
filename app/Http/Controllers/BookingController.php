@@ -10,8 +10,31 @@ class BookingController extends Controller
 {
     public function index()
     {
-        $bookings = Booking::orderBy('date')->orderBy('time')->get();
-        return view('bookings.index', compact('bookings'));
+        $now = now();
+
+        $activeBookings = Booking::get()->filter(function ($booking) use ($now) {
+            $start = Carbon::parse($booking->date . ' ' . $booking->time);
+            $end = $start->clone()->addHours($booking->duration);
+
+            return $end->greaterThanOrEqualTo($now);
+        });
+
+        return view('bookings.index', compact('activeBookings'));
+    }
+
+
+    public function completed()
+    {
+        $now = now();
+
+        $completedBookings = Booking::get()->filter(function ($booking) use ($now) {
+            $start = Carbon::parse($booking->date . ' ' . $booking->time);
+            $end = $start->clone()->addHours($booking->duration);
+
+            return $end->lessThan($now);
+        });
+
+        return view('bookings.completed', compact('completedBookings'));
     }
 
     public function create()

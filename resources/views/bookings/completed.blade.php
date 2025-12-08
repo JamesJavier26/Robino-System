@@ -1,7 +1,9 @@
 <x-app-layout>
     <div class="container mx-auto p-6">
         <div class="flex justify-between items-center mb-6">
-            <h1 class="text-3xl font-bold">Bookings</h1>
+            <h1 class="text-3xl font-bold">Completed Bookings</h1>
+
+            {{-- Optional: Show New Booking button if you want --}}
             <a href="{{ route('bookings.create') }}"
                class="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded shadow">
                 New Booking
@@ -14,8 +16,7 @@
             </div>
         @endif
 
-        {{-- 🔥 CHECK ACTIVE BOOKINGS --}}
-        @if($activeBookings->count() > 0)
+        @if($completedBookings->count() > 0)
             <div class="overflow-x-auto">
                 <table class="min-w-full bg-white border border-gray-200 shadow rounded">
                     <thead class="bg-gray-100">
@@ -30,9 +31,8 @@
                             <th class="p-3 text-left text-gray-700">Actions</th>
                         </tr>
                     </thead>
-
                     <tbody>
-                        @foreach($activeBookings as $booking)
+                        @foreach($completedBookings as $booking)
                             <tr class="border-b hover:bg-gray-50">
                                 <td class="p-3 font-medium" style="background-color: {{ $booking->color }}20;">
                                     {{ $booking->name }}
@@ -57,16 +57,14 @@
                                 </td>
 
                                 <td class="p-3 flex space-x-2">
-                                    <a href="{{ route('bookings.edit', $booking) }}"
+                                    <a href="{{ route('bookings.edit', $booking) }}" 
                                        class="text-blue-600 hover:underline">Edit</a>
 
                                     <form action="{{ route('bookings.destroy', $booking) }}" method="POST">
                                         @csrf
                                         @method('DELETE')
-                                        <button class="text-red-600 hover:underline"
-                                                onclick="return confirm('Delete booking?')">
-                                            Delete
-                                        </button>
+                                        <button class="text-red-600 hover:underline" 
+                                                onclick="return confirm('Delete booking?')">Delete</button>
                                     </form>
                                 </td>
                             </tr>
@@ -75,8 +73,7 @@
                 </table>
             </div>
         @else
-            <p class="text-gray-500 mt-6">No active bookings available. Create a new one!</p>
+            <p class="text-gray-500 mt-6">No completed bookings found.</p>
         @endif
-
     </div>
 </x-app-layout>
