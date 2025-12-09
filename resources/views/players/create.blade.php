@@ -40,7 +40,7 @@
                 <label class="block mb-1 font-medium">Skill Level</label>
                 <select name="skill_level" class="w-full border rounded p-2" required>
                     <option value="">Select</option>
-                    @foreach(['Beginner','Intermediate','Advanced','Professional'] as $level)
+                    @foreach(['A','B','C','D'] as $level)
                         <option value="{{ $level }}" {{ old('skill_level') == $level ? 'selected' : '' }}>
                             {{ $level }}
                         </option>

@@ -90,37 +90,86 @@
 
     <!-- Auto calculate end time -->
     <script>
-        const timeInput = document.getElementById('time');
-        const durationInput = document.getElementById('duration');
-        const timeEndInput = document.getElementById('time_end');
+    const timeInput = document.getElementById('time');
+    const durationInput = document.getElementById('duration');
+    const timeEndInput = document.getElementById('time_end');
 
-        function updateEndTime() {
-            const start = timeInput.value; // e.g., "09:00"
-            const duration = parseInt(durationInput.value);
+    function updateEndTime() {
+        const start = timeInput.value;
+        const duration = parseInt(durationInput.value);
 
-            if (!start || !duration) {
-                timeEndInput.value = '';
-                return;
-            }
-
-            const [hours, minutes] = start.split(':').map(Number);
-            const date = new Date();
-            date.setHours(hours);
-            date.setMinutes(minutes);
-            date.setSeconds(0);
-
-            // Add duration hours
-            date.setHours(date.getHours() + duration);
-
-            // Format as 12-hour e.g., 11:00 AM
-            const options = { hour: 'numeric', minute: '2-digit', hour12: true };
-            timeEndInput.value = date.toLocaleTimeString([], options);
+        if (!start || !duration) {
+            timeEndInput.value = '';
+            return;
         }
 
-        timeInput.addEventListener('change', updateEndTime);
-        durationInput.addEventListener('input', updateEndTime);
+        const [hours, minutes] = start.split(':').map(Number);
+        const date = new Date();
+        date.setHours(hours);
+        date.setMinutes(minutes);
+        date.setSeconds(0);
 
-        // initialize on page load
-        updateEndTime();
-    </script>
+        date.setHours(date.getHours() + duration);
+
+        const options = { hour: 'numeric', minute: '2-digit', hour12: true };
+        timeEndInput.value = date.toLocaleTimeString([], options);
+    }
+
+    timeInput.addEventListener('change', updateEndTime);
+    durationInput.addEventListener('input', updateEndTime);
+
+    updateEndTime();
+
+
+    /* --------------------------
+       NEW: Disable conflicting times
+       -------------------------- */
+
+    const booked = @json($booked);
+
+    // FIXED: Define required elements
+    const dateInput  = document.querySelector('input[name="date"]');
+    const courtInput = document.querySelector('select[name="court"]');
+    const timeSelect = document.getElementById('time');
+
+    function updateDisabledTimes() {
+        const date = dateInput.value;
+        const court = courtInput.value;
+        const duration = parseInt(durationInput.value);
+
+        if (!date || !court || !duration) return;
+
+        // Reset all time options
+        [...timeSelect.options].forEach(opt => {
+            opt.disabled = false;
+            opt.classList.remove('bg-red-200', 'text-gray-400');
+        });
+
+        const filtered = booked.filter(b => b.date === date && b.court == court);
+
+        [...timeSelect.options].forEach(opt => {
+            const startHour = parseInt(opt.value.split(':')[0]);
+            const endHour = startHour + duration;
+
+            const overlaps = filtered.some(b => {
+                const bStart = parseInt(b.start.split(':')[0]);
+                const bEnd = parseInt(b.end.split(':')[0]);
+
+                return startHour < bEnd && endHour > bStart;
+            });
+
+            if (overlaps) {
+                opt.disabled = true;
+                opt.classList.add('bg-red-200', 'text-gray-400');
+            }
+        });
+    }
+
+    dateInput.addEventListener('change', updateDisabledTimes);
+    courtInput.addEventListener('change', updateDisabledTimes);
+    durationInput.addEventListener('input', updateDisabledTimes);
+
+    updateDisabledTimes();
+</script>
+
 </x-app-layout>

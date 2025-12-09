@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\PlayerController;
+use App\Http\Controllers\QueueController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -21,7 +22,17 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/bookings/completed', [BookingController::class, 'completed'])
     ->name('bookings.completed');
+
+Route::get('/queues', [QueueController::class, 'index'])->name('queues.index');
+Route::post('/queues', [QueueController::class, 'store'])->name('queues.store');
+Route::delete('/queues/{queue}', [QueueController::class, 'remove'])->name('queues.remove');
+Route::post('/queues/matchup', [QueueController::class, 'matchup'])->name('queues.matchup');
+Route::post('/queues/reset-matchups', [QueueController::class, 'resetMatchups'])->name('queues.resetMatchups');
+
+
 Route::resource('bookings', BookingController::class);
+
+
 Route::resource('players', PlayerController::class);
 
 require __DIR__.'/auth.php';

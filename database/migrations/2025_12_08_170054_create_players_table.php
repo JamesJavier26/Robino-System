@@ -17,10 +17,10 @@ return new class extends Migration
             $table->integer('age')->nullable();        // Age may be optional
             $table->enum('sex', ['Male', 'Female']);   // Or 'M', 'F' if you prefer
             $table->enum('skill_level', [
-                'Beginner',
-                'Intermediate',
-                'Advanced',
-                'Professional'
+                'A',
+                'B',
+                'C',
+                'D'
             ]);
             $table->timestamps();
         });

@@ -17,6 +17,47 @@
         {{-- 🔥 CHECK ACTIVE BOOKINGS --}}
         @if($activeBookings->count() > 0)
             <div class="overflow-x-auto">
+                <div class="mb-6 bg-white p-4 rounded shadow border">
+                    <form method="GET" action="{{ route('bookings.index') }}" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                        {{-- Date Filter --}}
+                        <div>
+                            <label class="text-gray-700 font-medium">Filter by Date</label>
+                            <input type="date" name="date" value="{{ request('date') }}"
+                                class="w-full border p-2 rounded">
+                        </div>
+
+                        {{-- Court Filter --}}
+                        <div>
+                            <label class="text-gray-700 font-medium">Filter by Court</label>
+                            <select name="court" class="w-full border p-2 rounded">
+                                <option value="">All Courts</option>
+                                <option value="1" {{ request('court') == 1 ? 'selected' : '' }}>Court 1</option>
+                                <option value="2" {{ request('court') == 2 ? 'selected' : '' }}>Court 2</option>
+                                <option value="3" {{ request('court') == 3 ? 'selected' : '' }}>Court 3</option>
+                                <option value="4" {{ request('court') == 4 ? 'selected' : '' }}>Court 4</option>
+                                <option value="5" {{ request('court') == 5 ? 'selected' : '' }}>Court 5</option>
+                                <option value="6" {{ request('court') == 6 ? 'selected' : '' }}>Court 6</option>
+                            </select>
+                        </div>
+                        {{-- Total Duration --}}
+                        <div class="mb-4 p-4">
+                            @php
+                                // Sum durations of current filtered bookings
+                                $totalDuration = $activeBookings->sum('duration');
+                            @endphp
+                            <strong>Total Hours:</strong> {{ $totalDuration }} hours
+                        </div>
+
+                        {{-- Submit --}}
+                        <div class="flex items-end">
+                            <button class="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded shadow w-full">
+                                Apply Filters
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
                 <table class="min-w-full bg-white border border-gray-200 shadow rounded">
                     <thead class="bg-gray-100">
                         <tr>
@@ -60,14 +101,18 @@
                                     <a href="{{ route('bookings.edit', $booking) }}"
                                        class="text-blue-600 hover:underline">Edit</a>
 
-                                    <form action="{{ route('bookings.destroy', $booking) }}" method="POST">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button class="text-red-600 hover:underline"
-                                                onclick="return confirm('Delete booking?')">
-                                            Delete
-                                        </button>
-                                    </form>
+                                    @auth
+                                        @if (auth()->user()->role === 'admin')
+                                            <form action="{{ route('bookings.destroy', $booking) }}" method="POST">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button class="text-red-600 hover:underline"
+                                                        onclick="return confirm('Delete booking?')">
+                                                    Delete
+                                                </button>
+                                            </form>
+                                        @endif
+                                    @endauth
                                 </td>
                             </tr>
                         @endforeach

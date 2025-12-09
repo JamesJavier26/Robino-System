@@ -8,16 +8,39 @@ use Carbon\Carbon;
 
 class BookingController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $now = now();
 
-        $activeBookings = Booking::get()->filter(function ($booking) use ($now) {
+        // Start with all bookings
+        $query = Booking::query();
+
+        // --- Minimal-added filters ---
+        if ($request->filled('date')) {
+            $query->where('date', $request->date);
+        }
+
+        if ($request->filled('court')) {
+            $query->where('court', $request->court);
+        }
+        // ------------------------------
+
+        // Get filtered bookings first
+        $bookings = $query->get();
+
+        // Keep your SAME logic for active bookings
+        $activeBookings = $bookings->filter(function ($booking) use ($now) {
             $start = Carbon::parse($booking->date . ' ' . $booking->time);
             $end = $start->clone()->addHours($booking->duration);
 
             return $end->greaterThanOrEqualTo($now);
         });
+
+        // Sort by date THEN by time
+        $activeBookings = $activeBookings->sortBy([
+            ['date', 'asc'],
+            ['time', 'asc']
+        ]);
 
         return view('bookings.index', compact('activeBookings'));
     }
@@ -37,9 +60,19 @@ class BookingController extends Controller
         return view('bookings.completed', compact('completedBookings'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        return view('bookings.create');
+        // Get all existing bookings grouped by date + court
+        $booked = Booking::get()->map(function($b){
+            return [
+                'date'     => $b->date,
+                'court'    => $b->court,
+                'start'    => $b->time,
+                'end'      => Carbon::parse($b->time)->addHours($b->duration)->format('H:i'),
+            ];
+        });
+
+        return view('bookings.create', compact('booked'));
     }
 
     public function store(Request $request)
