@@ -27,6 +27,12 @@
                     <x-nav-link :href="route('queues.index')" :active="request()->routeIs('queues.index')">
                         {{ __('Queueing') }}
                     </x-nav-link>
+                    {{-- Users Link Visible Only to Admins --}}
+                    @if(Auth::user() && Auth::user()->role === 'admin')
+                    <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.index')">
+                        {{ __('Users') }}
+                    </x-nav-link>
+                    @endif
                 </div>
                 
             </div>

@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\QueueController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -28,6 +29,9 @@ Route::post('/queues', [QueueController::class, 'store'])->name('queues.store');
 Route::delete('/queues/{queue}', [QueueController::class, 'remove'])->name('queues.remove');
 Route::post('/queues/matchup', [QueueController::class, 'matchup'])->name('queues.matchup');
 Route::post('/queues/reset-matchups', [QueueController::class, 'resetMatchups'])->name('queues.resetMatchups');
+Route::post('/queues/replace', [QueueController::class, 'replace'])->name('queues.replace');
+Route::post('/queues/match/{match}/done', [QueueController::class, 'markMatchDone'])->name('queues.match.done');
+Route::get('/matches/records', [QueueController::class, 'matchRecords'])->name('matches.records');
 
 
 Route::resource('bookings', BookingController::class);
@@ -35,4 +39,7 @@ Route::resource('bookings', BookingController::class);
 
 Route::resource('players', PlayerController::class);
 
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::resource('users', UserController::class);
+});
 require __DIR__.'/auth.php';

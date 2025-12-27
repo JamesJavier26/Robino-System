@@ -18,8 +18,11 @@ class BookingController extends Controller
         // --- Minimal-added filters ---
         if ($request->filled('date')) {
             $query->where('date', $request->date);
+            $scheduleDate = $request->date; // use this for the grid
+        } else {
+            $scheduleDate = Carbon::today()->toDateString();
         }
-
+        
         if ($request->filled('court')) {
             $query->where('court', $request->court);
         }
@@ -42,7 +45,9 @@ class BookingController extends Controller
             ['time', 'asc']
         ]);
 
-        return view('bookings.index', compact('activeBookings'));
+    $todaysBookings = $activeBookings->filter(fn($b) => $b->date == $scheduleDate);
+
+    return view('bookings.index', compact('activeBookings', 'todaysBookings', 'scheduleDate'));
     }
 
 
@@ -80,7 +85,7 @@ class BookingController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'date' => 'required|date',
-            'time' => 'required',
+            'time' => 'nullable',
             'duration' => 'required|integer|min:1',
             'time_end' => 'required|string',
             'color' => 'required|string',
@@ -89,18 +94,31 @@ class BookingController extends Controller
 
         if ($this->hasOverlap($request)) {
             return back()->withErrors([
-                'time' => 'This time overlaps with an existing booking for this court.'
+                'time' => 'This time overlaps with an existing booking or scheduled booking for this court.'
             ])->withInput();
         }
 
-        Booking::create($request->all());
+        Booking::create([
+            'user_id' => auth()->id(),
+            'name' => $request->name,
+            'date' => $request->date,
+            'time' => $request->time,
+            'duration' => $request->duration,
+            'time_end' => $request->time_end,
+            'color' => $request->color,
+            'court' => $request->court,
+        ]);
+
 
         return redirect()->route('bookings.index')->with('success', 'Booking created!');
     }
 
     public function edit(Booking $booking)
     {
-        return view('bookings.edit', compact('booking'));
+        // Get all bookings except the current one
+        $booked = Booking::where('id', '!=', $booking->id)->get();
+
+        return view('bookings.edit', compact('booking', 'booked'));
     }
 
     public function update(Request $request, Booking $booking)
@@ -108,7 +126,7 @@ class BookingController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'date' => 'required|date',
-            'time' => 'required',
+            'time' => 'nullable',
             'duration' => 'required|integer|min:1',
             'time_end' => 'required|string',
             'color' => 'required|string',
@@ -117,7 +135,7 @@ class BookingController extends Controller
 
         if ($this->hasOverlap($request, $booking->id)) {
             return back()->withErrors([
-                'time' => 'This time overlaps with an existing booking for this court.'
+                'time' => 'This time overlaps with an existing booking or scheduled booking for this court.'
             ])->withInput();
         }
 
@@ -142,21 +160,43 @@ class BookingController extends Controller
         $court = $request->court;
 
         // Start and end times from request
-        $newStart = $request->time;          // "HH:MM" string, no parsing
-        $newEnd   = Carbon::parse($request->time_end); // only parse time_end
+        $newStart = Carbon::parse($request->time);
+        $newEnd   = Carbon::parse($request->time_end);
 
+        // Existing bookings
         $existing = Booking::where('court', $court)
             ->where('date', $date)
             ->when($ignoreId, fn($q) => $q->where('id', '!=', $ignoreId))
             ->get();
 
+        // 1️⃣ Check for overlap with existing bookings
         foreach ($existing as $b) {
-            $existingStart = $b->time;          // keep as string
-            $existingEnd   = Carbon::parse($b->time_end); // parse only time_end
+            $existingStart = Carbon::parse($b->time);
+            $existingEnd   = Carbon::parse($b->time_end);
 
-            // Compare using Carbon for end times, strings for start times
-            if ($newStart < $existingEnd->format('H:i') && $newEnd->format('H:i') > $existingStart) {
+            if ($newStart < $existingEnd && $newEnd > $existingStart) {
                 return true;
+            }
+        }
+
+        // 2️⃣ Check for blackout periods (example: courts 1–3 only)
+        $dayOfWeek = Carbon::parse($date)->dayOfWeek; // 0 = Sunday, 6 = Saturday
+        $blackoutRules = [
+            0 => [['start' => 13, 'end' => 16]], // Sunday
+            3 => [['start' => 16, 'end' => 19]], // Wednesday
+            5 => [['start' => 16, 'end' => 19]], // Friday
+            6 => [['start' => 14, 'end' => 17]], // Saturday
+        ];
+
+        if (in_array($court, [1, 2, 3]) && isset($blackoutRules[$dayOfWeek])) {
+            foreach ($blackoutRules[$dayOfWeek] as $rule) {
+                $blackoutStart = Carbon::createFromTime($rule['start'], 0);
+                $blackoutEnd   = Carbon::createFromTime($rule['end'], 0);
+
+                // If any part of booking overlaps blackout, block it
+                if ($newStart < $blackoutEnd && $newEnd > $blackoutStart) {
+                    return true;
+                }
             }
         }
 
