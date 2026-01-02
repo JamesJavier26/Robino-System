@@ -74,7 +74,7 @@
                     @php
                         $blackoutRules = [
                             3 => ['start' => 16, 'end' => 19], // Wednesday
-                            4 => ['start' => 16, 'end' => 19], // Thursday
+                            5 => ['start' => 16, 'end' => 19], // Friday
                             6 => ['start' => 14, 'end' => 17], // Saturday
                             0 => ['start' => 13, 'end' => 16], // Sunday
                         ];
