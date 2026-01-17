@@ -182,10 +182,13 @@ class BookingController extends Controller
         // 2️⃣ Check for blackout periods (example: courts 1–3 only)
         $dayOfWeek = Carbon::parse($date)->dayOfWeek; // 0 = Sunday, 6 = Saturday
         $blackoutRules = [
-            0 => [['start' => 13, 'end' => 16]], // Sunday
+            1 => [['start' => 17, 'end' => 20]], // Monday
+            2 => [['start' => 18, 'end' => 24]], // Tuesday
             3 => [['start' => 16, 'end' => 19]], // Wednesday
+            4 => [['start' => 18, 'end' => 24]], // Thursday
             5 => [['start' => 16, 'end' => 19]], // Friday
-            6 => [['start' => 14, 'end' => 17]], // Saturday
+            6 => [['start' => 18, 'end' => 24]], // Saturday
+            0 => [['start' => 13, 'end' => 16]], // Sunday
         ];
 
         if (in_array($court, [1, 2, 3]) && isset($blackoutRules[$dayOfWeek])) {

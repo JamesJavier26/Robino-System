@@ -132,9 +132,12 @@
 
     /* ✅ ADDED: fixed blackout rules */
     const blackoutRules = {
+        1: [{ start: 17, end: 20 }], // Monday
+        2: [{ start: 18, end: 24 }], // Tuesday
         3: [{ start: 16, end: 19 }], // Wednesday
+        4: [{ start: 18, end: 24 }], // Thursday
         5: [{ start: 16, end: 19 }], // Friday
-        6: [{ start: 14, end: 17 }], // Saturday
+        6: [{ start: 18, end: 24 }], // Saturday
         0: [{ start: 13, end: 16 }]  // Sunday
     };
 
