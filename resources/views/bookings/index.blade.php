@@ -71,16 +71,32 @@
                         </div>
                     @endfor
 
-                    @php
-                        $blackoutRules = [
-                            1 => ['start' => 17, 'end' => 20], // Monday
-                            2 => ['start' => 18, 'end' => 24], // Tuesday
-                            3 => ['start' => 16, 'end' => 19], // Wednesday
-                            4 => ['start' => 18, 'end' => 24], // Thursday
-                            5 => ['start' => 16, 'end' => 19], // Friday
-                            6 => ['start' => 18, 'end' => 24], // Saturday
-                            0 => ['start' => 13, 'end' => 16], // Sunday
-                        ];
+                    {{-- Blackout Rules --}}
+                        @php
+                            $blackoutRules = [
+                                1 => [
+                                    ['start' => 17, 'end' => 20, 'color' => 'bg-red-500 text-gray-400'] // Monday
+                                ],
+                                2 => [
+                                    ['start' => 18, 'end' => 24, 'color' => 'bg-yellow-500 text-gray-700'] // Tuesday (new color)
+                                ],
+                                3 => [
+                                    ['start' => 16, 'end' => 19, 'color' => 'bg-red-500 text-gray-400'] // Wednesday
+                                ],
+                                4 => [
+                                    ['start' => 18, 'end' => 24, 'color' => 'bg-yellow-500 text-gray-700'] // Thursday (new color)
+                                ],
+                                5 => [
+                                    ['start' => 16, 'end' => 19, 'color' => 'bg-red-500 text-gray-400'] // Friday
+                                ],
+                                6 => [
+                                    ['start' => 13, 'end' => 16, 'color' => 'bg-red-500 text-gray-400'], // Saturday 1pm-4pm
+                                    ['start' => 18, 'end' => 24, 'color' => 'bg-yellow-500 text-gray-700'] // Saturday 6pm-12am (new color)
+                                ],
+                                0 => [
+                                    ['start' => 13, 'end' => 16, 'color' => 'bg-red-500 text-gray-400'] // Sunday
+                                ],
+                            ];
 
                         $dayOfWeek = \Carbon\Carbon::parse(request('date') ?? now())->dayOfWeek;
                     @endphp
@@ -112,16 +128,22 @@
 
                                 // Check blackout period (only for courts 1-3)
                                 $isBlackout = false;
-                                if (in_array($c, [1,2,3]) && isset($blackoutRules[$dayOfWeek])) {
-                                    $rule = $blackoutRules[$dayOfWeek];
-                                    if ($hour >= $rule['start'] && $hour < $rule['end']) {
-                                        $isBlackout = true;
+                                $blackoutClass = '';
+
+                                if (in_array($c, [1, 2, 3]) && isset($blackoutRules[$dayOfWeek])) {
+                                    foreach ($blackoutRules[$dayOfWeek] as $rule) {
+                                        if ($hour >= $rule['start'] && $hour < $rule['end']) {
+                                            $isBlackout = true;
+                                            $blackoutClass = $rule['color'];
+                                            break;
+                                        }
                                     }
                                 }
 
                                 $slotClass = $slotBooking
                                     ? $courtColors[$c]
-                                    : ($isBlackout ? 'bg-red-500 text-gray-400 cursor-not-allowed' : 'bg-white');
+                                    : ($isBlackout ? $blackoutClass : 'bg-white');
+
                             @endphp
 
                             <div

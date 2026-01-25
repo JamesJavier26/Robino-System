@@ -187,7 +187,10 @@ class BookingController extends Controller
             3 => [['start' => 16, 'end' => 19]], // Wednesday
             4 => [['start' => 18, 'end' => 24]], // Thursday
             5 => [['start' => 16, 'end' => 19]], // Friday
-            6 => [['start' => 18, 'end' => 24]], // Saturday
+            6 => [ // Saturday
+                    ['start' => 13, 'end' => 16], // 1PM–4PM
+                    ['start' => 18, 'end' => 24], // 6PM–12AM
+                ],
             0 => [['start' => 13, 'end' => 16]], // Sunday
         ];
 
