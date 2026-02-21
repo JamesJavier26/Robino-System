@@ -19,7 +19,7 @@
                 <div class="mb-4">
                     <label class="block text-gray-700 font-medium mb-2">Name</label>
                     <input type="text" name="name" required
-                        class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400" autocomplete="off">
                 </div>
 
                 <!-- Date -->
@@ -141,7 +141,10 @@
             { start: 13, end: 16 }, // 1PM–4PM
             { start: 18, end: 24 }  // 6PM–12AM
         ],
-        0: [{ start: 13, end: 16 }] // Sunday
+        0: [ // Sunday
+            { start: 13, end: 16 }, // 1PM–4PM
+            { start: 16, end: 20 }  // 6PM–12AM
+        ]
     };
 
     function updateDisabledTimes() {

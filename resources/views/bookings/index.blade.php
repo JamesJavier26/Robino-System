@@ -94,7 +94,8 @@
                                     ['start' => 18, 'end' => 24, 'color' => 'bg-yellow-500 text-gray-700'] // Saturday 6pm-12am (new color)
                                 ],
                                 0 => [
-                                    ['start' => 13, 'end' => 16, 'color' => 'bg-red-500 text-gray-400'] // Sunday
+                                    ['start' => 13, 'end' => 16, 'color' => 'bg-red-500 text-gray-400'],
+                                    ['start' => 16, 'end' => 20, 'color' => 'bg-red-500 text-gray-400'] // Sunday
                                 ],
                             ];
 

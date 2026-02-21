@@ -191,7 +191,10 @@ class BookingController extends Controller
                     ['start' => 13, 'end' => 16], // 1PM–4PM
                     ['start' => 18, 'end' => 24], // 6PM–12AM
                 ],
-            0 => [['start' => 13, 'end' => 16]], // Sunday
+            0 => [ // Sunday
+                    ['start' => 13, 'end' => 16], // 1PM–4PM
+                    ['start' => 16, 'end' => 20], // 6PM–12AM
+                ],
         ];
 
         if (in_array($court, [1, 2, 3]) && isset($blackoutRules[$dayOfWeek])) {
